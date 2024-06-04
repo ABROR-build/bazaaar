@@ -4,5 +4,5 @@ from products import models
 
 admin.site.register(models.Category)
 admin.site.register(models.Pages)
-admin.site.register(models.Category)
-admin.site.register(models.Category)
+admin.site.register(models.Products)
+admin.site.register(models.Comments)
