@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
-
+from django.core.validators import MinValueValidator, MaxValueValidator
+from users.models import User
 
 class Category(models.Model):
     name = models.CharField(max_length=300)
@@ -51,8 +52,14 @@ class Images(models.Model):
 
 class Comments(models.Model):
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
-    star_given = models.IntegerField()
+    star_given = models.IntegerField(
+        default=0,
+        validators=[
+            MaxValueValidator(5),
+            MinValueValidator(0)
+        ])
     comment = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "Comments"
