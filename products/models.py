@@ -3,6 +3,7 @@ from users.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from users.models import User
 
+
 class Category(models.Model):
     name = models.CharField(max_length=300)
 
@@ -17,6 +18,7 @@ class Pages(models.Model):
     account = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=300)
+    description = models.TextField(null=True)
 
     class Meta:
         db_table = 'Pages'
