@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from . import models
-from . import forms
+from users import models
+from users import forms
 from django.views import View
 from .models import User
 
@@ -13,7 +13,7 @@ class RegisterView(View):
     def get(self, request):
         register_form = forms.RegisterForm()
         context = {
-            'register_form': register_form
+            'form': register_form
         }
         return render(request, 'register.html', context=context)
 
@@ -24,18 +24,18 @@ class RegisterView(View):
             return redirect('login')
         else:
             context = {
-                "register_form": register_form
+                "form": register_form
             }
-            return render(request, 'register.html')
+            return render(request, 'register.html', context=context)
 
 
 class LoginView(View):
     def get(self, request):
         login_form = AuthenticationForm()
         context = {
-            "login_form": login_form
+            "form": login_form
         }
-        return render(request, 'login.html',context=context)
+        return render(request, 'login.html', context=context)
 
     def post(self, request):
         login_form = AuthenticationForm(data=request.POST)
@@ -45,7 +45,7 @@ class LoginView(View):
             return redirect('ListProducts')
         else:
             context = {
-                "login_form": login_form
+                "form": login_form
             }
             return render(request, 'login.html', context=context)
 
@@ -53,14 +53,14 @@ class LoginView(View):
 class LogoutView(LoginRequiredMixin, View):
     def get(self, request):
         logout(request)
-        return redirect('landing_page')
+        return redirect('product:home')
 
 
 class ProfileView(View):
     def get(self, request):
-        profile = User()
+        profile_form = User()
         context = {
-            "profile": profile
+            "profile_form": profile_form
         }
         return render(request, 'profile.html', context=context)
 

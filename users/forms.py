@@ -5,7 +5,7 @@ from .models import User
 class RegisterForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'password', 'image']
+        fields = ['username', 'first_name', 'last_name', 'email',  'password', 'image']
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -18,6 +18,6 @@ class RegisterForm(forms.ModelForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'password', 'image']
+        fields = ['username', 'first_name', 'last_name', 'email', 'image']
 
 
