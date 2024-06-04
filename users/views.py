@@ -8,7 +8,6 @@ from users import forms
 from django.views import View
 from .models import User
 
-
 class RegisterView(View):
     def get(self, request):
         register_form = forms.RegisterForm()
@@ -21,7 +20,7 @@ class RegisterView(View):
         register_form = forms.RegisterForm(data=request.POST, files=request.FILES)
         if register_form.is_valid():
             register_form.save()
-            return redirect('login')
+            return redirect('users:login')
         else:
             context = {
                 "form": register_form
@@ -40,9 +39,9 @@ class LoginView(View):
     def post(self, request):
         login_form = AuthenticationForm(data=request.POST)
         if login_form.is_valid():
-            account = login_form.get_user()
-            login(request, account)
-            return redirect('ListProducts')
+            user = login_form.get_user()
+            login(request, user)
+            return redirect('product:home')
         else:
             context = {
                 "form": login_form
@@ -56,19 +55,13 @@ class LogoutView(LoginRequiredMixin, View):
         return redirect('product:home')
 
 
-class ProfileView(View):
-    def get(self, request):
-        profile_form = User()
-        context = {
-            "profile_form": profile_form
-        }
-        return render(request, 'profile.html', context=context)
-
-
-class ProfileUpdateView(View):
+class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
         update_form = forms.EditProfileForm(instance=request.user)
-        return render(request, 'profile_update.html', {'form': update_form})
+        context = {
+            'form': update_form
+        }
+        return render(request, 'profile_edit.html', context=context)
 
     def post(self, request):
         update_form = forms.EditProfileForm(request.POST, request.FILES, instance=request.user)
@@ -76,5 +69,7 @@ class ProfileUpdateView(View):
             update_form.save()
             return redirect('users:profile')
         else:
-            return render(request, 'profile_update.html', {'form': update_form})
-
+            context = {
+                'form': update_form
+            }
+            return render(request, 'profile_edit.html', context=context)
