@@ -32,7 +32,18 @@ class Products(models.Model):
     page = models.ForeignKey(Pages, on_delete=models.CASCADE)
     name = models.CharField(max_length=500)
     description = models.TextField()
+
     price = models.FloatField()
+
+    discount = models.IntegerField(default=0)
+    price_discount = models.IntegerField(default=1)
+
+    def calculate_price_discount(self):
+        return self.price - ((self.price // 100) * self.discount)
+
+    def save(self, *args, **kwargs):
+        self.price_discount = self.calculate_price_discount()
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'Products'
