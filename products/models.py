@@ -17,8 +17,9 @@ class Category(models.Model):
 class Pages(models.Model):
     account = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=300, unique=True)
     description = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'Pages'
