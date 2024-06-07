@@ -138,7 +138,6 @@ class AddToCart(models.Model):
 class Order(models.Model):
     account = models.ForeignKey(User, on_delete=models.CASCADE)
     products = models.ManyToManyField(CartItem)
-    price = models.ForeignKey(AddToCart, on_delete=models.CASCADE, default=0)
     location = models.CharField(max_length=200)
     comment = models.TextField()
 
