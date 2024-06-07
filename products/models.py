@@ -114,18 +114,20 @@ class AddToCart(models.Model):
     items = models.ManyToManyField(CartItem)
     total_price = models.FloatField(default=0)
 
-    def calculate_total(self):
+    def calculate_total_price(self):
         total = 0
         for item in self.items.all():
+            print(item)
             total += item.calculate_total()
+            print(total)
         return total
 
     def update_total_price(self):
-        self.total_price = self.calculate_total()
+        self.total_price = self.calculate_total_price()
         super().save(update_fields=['total_price'])
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Save the instance first
+        super().save(*args, **kwargs)
         self.update_total_price()
 
     class Meta:
