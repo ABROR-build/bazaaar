@@ -79,3 +79,71 @@ class Comments(models.Model):
 
     def __str__(self):
         return f"comment of - {self.product.name}"
+
+
+class Like(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "Likes"
+
+    def __str__(self):
+        return f"{self.account.username} liked {self.product.name}"
+
+
+class CartItem(models.Model):
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def calculate_total(self):
+        return self.product.price_discount * self.quantity
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = "CartItem"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity}"
+
+
+class AddToCart(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    items = models.ManyToManyField(CartItem)
+    total_price = models.FloatField(default=0)
+
+    def calculate_total(self):
+        total = 0
+        for item in self.items.all():
+            total += item.calculate_total()
+        return total
+
+    def update_total_price(self):
+        self.total_price = self.calculate_total()
+        super().save(update_fields=['total_price'])
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Save the instance first
+        self.update_total_price()
+
+    class Meta:
+        db_table = "AddTocart"
+
+    def __str__(self):
+        return f"{self.account.username}"
+
+
+class Order(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    products = models.ManyToManyField(CartItem)
+    price = models.ForeignKey(AddToCart, on_delete=models.CASCADE, default=0)
+    location = models.CharField(max_length=200)
+    comment = models.TextField()
+
+    class Meta:
+        db_table = "Order"
+
+    def __str__(self):
+        return f"{self.account.username} ordered - {self.products.items}"
