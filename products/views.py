@@ -1,11 +1,14 @@
 from django.views import View
 from django.views.generic import DeleteView, ListView
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Pages, Products, SavedProduct, CartItem, Images
+from .models import Pages, Products, SavedProduct, CartItem, Images, Comments
 from products import forms
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.contrib import messages
 
 
 class HomePageView(View):
@@ -37,13 +40,15 @@ class SearchResultsView(ListView):
         return context
 
 
+#  Page bilab bog'liq viewlar
+
 class MypagesListView(View):
     def get(self, request):
         pages = Pages.objects.filter(account=request.user)
         context = {
             'pages': pages
         }
-        return render(request, 'my_pages.html', context=context)
+        return render(request, 'page/my_pages.html', context=context)
 
 
 class CreatePageView(View):
@@ -52,7 +57,7 @@ class CreatePageView(View):
         context = {
             'create_page_form': create_page_form
         }
-        return render(request, 'create_page.html', context=context)
+        return render(request, 'page/create_page.html', context=context)
 
     def post(self, request):
         create_page_form = forms.PagesForm(request.POST, request.FILES)
@@ -67,7 +72,7 @@ class CreatePageView(View):
             context = {
                 'create_page_form': create_page_form
             }
-            return render(request, 'create_page.html', context=context)
+            return render(request, 'page/create_page.html', context=context)
 
 
 class PageDetailView(View):
@@ -76,10 +81,11 @@ class PageDetailView(View):
         page = get_object_or_404(Pages, id=page_id)
         products = Products.objects.filter(page_id=page_id)
         context = {
+            'page_id': page_id,
             'page': page,
             'products': products
         }
-        return render(request, 'page_detail.html', context=context)
+        return render(request, 'page/page_detail.html', context=context)
 
 
 class PageUpdateView(View):
@@ -89,7 +95,7 @@ class PageUpdateView(View):
         context = {
             'form': form
         }
-        return render(request, 'page_update.html', context=context)
+        return render(request, 'page/page_update.html', context=context)
 
     def post(self, request, page_id):
         page = get_object_or_404(Pages, pk=page_id)
@@ -100,7 +106,41 @@ class PageUpdateView(View):
         context = {
             'form': form
         }
-        return render(request, 'page_update.html', context=context)
+        return render(request, 'page/page_update.html', context=context)
+
+
+# Product bilan bog'liq viewlar
+
+class ProductCreateView(View):
+    def get(self, request, page_id):
+        create_form = forms.ProductsForm()
+        image_form = forms.ProductImagesForm()
+        context = {
+            'create_form': create_form,
+            'image_form': image_form
+        }
+        return render(request, 'product/product_create.html', context=context)
+
+    def post(self, request, page_id):
+        create_form = forms.ProductsForm(request.POST, request.FILES)
+        image_form = forms.ProductImagesForm(request.POST, request.FILES)
+        if create_form.is_valid() and image_form.is_valid():
+            new_product = create_form.save(commit=False)
+            page = get_object_or_404(Pages, id=page_id)
+            new_product.page = page
+            new_product.save()
+
+            images = request.FILES.getlist('images')
+            for image in images:
+                Images.objects.create(product=new_product, image=image)
+
+            return redirect('products:page-detail', page_id=page_id)
+        else:
+            context = {
+                'create_form': create_form,
+                'image_form': image_form
+            }
+            return render(request, 'product/product_create.html', context=context)
 
 
 class ProductDetailView(View):
@@ -109,52 +149,87 @@ class ProductDetailView(View):
         product = get_object_or_404(Products, pk=product_id)
         productsave = SavedProduct.objects.filter(product=product)
         context = {
+            'page_id': page_id,
+            'product_id': product_id,
             'page': page,
             'product': product,
             'productsave': productsave,
         }
-        return render(request, 'product_detail.html', context=context)
+        return render(request, 'product/product_detail.html', context=context)
 
 
 class ProductUpdateView(View):
-    def get_object(self):
-        pk = self.kwargs.get("pk")
+    def get_object(self, pk):
         return get_object_or_404(Products, pk=pk)
 
-    def get(self, request, pk):
-        product = get_object_or_404(Products, pk=pk)
+    def get(self, request, page_id, product_id):
+        page = get_object_or_404(Pages, id=page_id)
+        product = self.get_object(product_id)
         update_form = forms.ProductsForm(instance=product)
+        image_form = forms.ProductImagesForm()
         context = {
-            'form': update_form
+            'page_id': page_id,
+            'page': page,
+            'update_form': update_form,
+            'image_form': image_form,
+            'product': product
         }
-        return render(request, 'product_update.html', context=context)
+        return render(request, 'product/product_update.html', context=context)
 
-    def post(self, request, pk):
-        product = get_object_or_404(Products, pk=pk)
+    def post(self, request, page_id, product_id):
+        product = self.get_object(product_id)
+        page = get_object_or_404(Pages, id=page_id)
         update_form = forms.ProductsForm(request.POST, request.FILES, instance=product)
+        image_form = forms.ProductImagesForm(request.POST, request.FILES)
+
         if update_form.is_valid():
             update_form.save()
-            return redirect('products:home')
+
+            if image_form.is_valid():
+                images = request.FILES.getlist('images')
+                for image in images:
+                    Images.objects.create(product=product, image=image)
+
+            return redirect('products:product-detail', page_id=page_id, product_id=product.id)
         else:
             context = {
-                'form': update_form
+                'page_id': page_id,
+                'page': page,
+                'update_form': update_form,
+                'image_form': image_form,
+                'product': product
             }
-            return render(request, 'product_update.html', context=context)
+            return render(request, 'product/product_update.html', context=context)
 
 
 class ProductDeleteView(DeleteView):
     model = Products
-    template_name = 'post_delete.html'
+    template_name = 'product/product_delete.html'
     success_url = reverse_lazy('products:home')
 
 
 class SavedProductView(View):
     def get(self, request):
-        savedproduct = SavedProduct.object.filter(user=request.user)
+        savedproducts = SavedProduct.objects.filter(user=request.user)
         context = {
-            'savedproduct': savedproduct,
+            'savedproducts': savedproducts,
         }
         return render(request, 'savedproducts.html', context=context)
+
+
+@method_decorator(login_required, name='dispatch')
+class SaveProductView(View):
+    def post(self, request, product_id):
+        product = get_object_or_404(Products, id=product_id)
+        saved_product, created = SavedProduct.objects.get_or_create(user=request.user, product=product)
+
+        if not created:
+            saved_product.delete()
+            saved = False
+        else:
+            saved = True
+
+        return JsonResponse({'saved': saved})
 
 
 def view_cart(request):
@@ -183,3 +258,74 @@ def remove_from_cart(request, item_id):
     cart_item = CartItem.objects.get(id=item_id)
     cart_item.delete()
     return redirect('products:view_cart')
+
+# comment bilan bog'liq viewlar
+
+
+class CommentCreateView(View):
+    @method_decorator(login_required)
+    def post(self, request, product_id):
+        product = get_object_or_404(Products, id=product_id)
+        form = forms.CommentsForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.product = product
+            comment.save()
+            return redirect('products:product-detail', page_id=product.page.id, product_id=product.id)
+        context = {
+            'product': product,
+            'form': form
+        }
+        return render(request, 'product/product_detail.html', context=context)
+
+
+class CommentEditView(View):
+    @method_decorator(login_required)
+    def get(self, request, comment_id):
+        comment = get_object_or_404(Comments, id=comment_id, user=request.user)
+        form = forms.CommentsForm(instance=comment)
+        context = {
+            'form': form,
+            'comment': comment,
+            'product': comment.product  # Assuming comment has a 'product' field
+        }
+        return render(request, 'comments/edit_comment.html', context=context)
+
+    @method_decorator(login_required)
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comments, id=comment_id, user=request.user)
+        form = forms.CommentsForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            return redirect('products:product-detail', page_id=comment.product.page.id, product_id=comment.product.id)
+        context = {
+            'form': form,
+            'comment': comment,
+            'product': comment.product  # Assuming comment has a 'product' field
+        }
+        return render(request, 'comments/edit_comment.html', context=context)
+
+
+class CommentDeleteView(View):
+    @method_decorator(login_required)
+    def get(self, request, comment_id):
+        comment = get_object_or_404(Comments, id=comment_id, user=request.user)
+        product = comment.product
+        is_author = comment.user == request.user
+        context = {
+            'comment': comment,
+            'product': product,
+            'is_author': is_author
+        }
+        return render(request, 'product/delete_comment.html', context=context)
+
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comments, id=comment_id, user=request.user)
+        product = comment.product
+        if comment.user != request.user:
+            messages.error(request, "siz bu comment egasi emasiz!")
+            return redirect('products:product-detail', page_id=product.page.id, product_id=product.id)
+        comment.delete()
+        messages.success(request, 'comment deleted successfully')
+        return redirect('products:product-detail', page_id=product.page.id, product_id=product.id)

@@ -11,28 +11,29 @@
         {% for product in products %}
             <div class="col-md-3 mb-4">
                 <div class="product-card">
-                    <div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            {% for image in product.image_set.all %}
-                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                    <div class="carousel-image-container">
-                                        <img src="{{ image.image.url }}" class="d-block w-100 carousel-image" alt="{{ product.name }}">
+                    <a href="{% url 'products:product-detail' page_id=product.page.id product_id=product.id %}">
+                        <div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for image in product.image_set.all %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <div class="carousel-image-container">
+                                            <img src="{{ image.image.url }}" class="d-block w-100 carousel-image" alt="{{ product.name }}">
+                                        </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
-                    </div>
-                    <h3>{{ product.name }}</h3>
-                    <p>⭐{{ product.rating }} ({{ product.reviews_count }} reviews)</p>
-                    <button class="btn btn-dark">Follow</button>
+                        <h3>{{ product.name }}</h3>
+                        <p>⭐{{ product.rating }} ({{ product.reviews_count }} reviews)</p>
+                    </a>
                 </div>
             </div>
         {% endfor %}
