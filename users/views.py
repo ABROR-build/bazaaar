@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -7,6 +6,7 @@ from users import models
 from users import forms
 from django.views import View
 from .models import User
+
 
 class RegisterView(View):
     def get(self, request):
@@ -41,7 +41,7 @@ class LoginView(View):
         if login_form.is_valid():
             user = login_form.get_user()
             login(request, user)
-            return redirect('product:home')
+            return redirect('products:home')
         else:
             context = {
                 "form": login_form
@@ -49,18 +49,21 @@ class LoginView(View):
             return render(request, 'login.html', context=context)
 
 
-class LogoutView(LoginRequiredMixin, View):
+class LogoutView(View):
     def get(self, request):
         logout(request)
-        return redirect('product:home')
+        return redirect('products:home')
 
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
+        return render(request, 'profile.html')
+
+
+class ProfileUpdateView(LoginRequiredMixin, View):
+    def get(self, request):
         update_form = forms.EditProfileForm(instance=request.user)
-        context = {
-            'form': update_form
-        }
+        context = {'form': update_form}
         return render(request, 'profile_edit.html', context=context)
 
     def post(self, request):
@@ -69,7 +72,5 @@ class ProfileView(LoginRequiredMixin, View):
             update_form.save()
             return redirect('users:profile')
         else:
-            context = {
-                'form': update_form
-            }
+            context = {'form': update_form}
             return render(request, 'profile_edit.html', context=context)

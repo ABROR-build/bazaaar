@@ -1,9 +1,2 @@
 env
-*.pyc
-
-*.log
-
-config.ini
-secrets.json
-
 .idea

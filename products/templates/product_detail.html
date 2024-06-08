@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Product Detail
+{% endblock title %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>{{ product.name }}</h1>
+        <p>{{ product.description }}</p>
+        <p>Price: {{ product.price_discount }}-so'm</p>
+
+        {% if product.images_set.all %}
+            <div class="product-images">
+                {% for image in product.images_set.all %}
+                    <img src="{{ image.image.url }}" alt="{{ product.name }} Image" class="img-fluid">
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="quantity-selector mt-3">
+            <button id="minus-button" class="btn btn-secondary">-</button>
+            <input id="quantity-input" type="number" value="1" min="1" readonly>
+            <button id="plus-button" class="btn btn-secondary">+</button>
+        </div>
+
+        <a id="add-to-cart-button" class="buy-now-button btn btn-primary mt-3" href="#">Add to Cart</a>
+
+        <h2>Saved Products</h2>
+        {% if saved_products.exists %}
+            <ul>
+                {% for saved_product in saved_products %}
+                    <li>{{ saved_product.name }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No saved products.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var quantityInput = document.getElementById('quantity-input');
+            var minusButton = document.getElementById('minus-button');
+            var plusButton = document.getElementById('plus-button');
+            var addToCartButton = document.getElementById('add-to-cart-button');
+
+            minusButton.addEventListener('click', function() {
+                var currentQuantity = parseInt(quantityInput.value);
+                if (currentQuantity > 1) {
+                    quantityInput.value = currentQuantity - 1;
+                }
+            });
+
+            plusButton.addEventListener('click', function() {
+                var currentQuantity = parseInt(quantityInput.value);
+                quantityInput.value = currentQuantity + 1;
+            });
+
+            addToCartButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                var quantity = quantityInput.value;
+                var url = "{% url 'products:add_to_cart' product.id %}?quantity=" + quantity;
+                window.location.href = url;
+            });
+        });
+    </script>
+{% endblock content %}
