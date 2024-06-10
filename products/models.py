@@ -150,6 +150,16 @@ class SavedProduct(models.Model):
 #         self.price = self.product.price_discount * self.quantity
 #         super().save(*args, **kwargs)
 #         self.order.calculate_total_price()
+class Like(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "Likes"
+
+    def __str__(self):
+        return f"{self.account.username} liked {self.product.name}"
+
 
 
 class CartItem(models.Model):
@@ -160,3 +170,56 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f'{self.quantity} x {self.product.name}'
+
+    def calculate_total(self):
+        return self.product.price_discount * self.quantity
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = "CartItem"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity}"
+
+
+class AddToCart(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    items = models.ManyToManyField(CartItem)
+    total_price = models.FloatField(default=0)
+
+    def calculate_total_price(self):
+        total = 0
+        for item in self.items.all():
+            print(item)
+            total += item.calculate_total()
+            print(total)
+        return total
+
+    def update_total_price(self):
+        self.total_price = self.calculate_total_price()
+        super().save(update_fields=['total_price'])
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.update_total_price()
+
+    class Meta:
+        db_table = "AddTocart"
+
+    def __str__(self):
+        return f"{self.account.username}"
+
+
+class Order(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    products = models.ManyToManyField(CartItem)
+    location = models.CharField(max_length=200)
+    comment = models.TextField()
+
+    class Meta:
+        db_table = "Order"
+
+    def __str__(self):
+        return f"{self.account.username} ordered - {self.products.items}"
