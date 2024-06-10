@@ -55,7 +55,7 @@
         font-weight: bold;
     }
     a {
-    color: black;
+    color: blue;
     text-decoration: none;
 }
 </style>
@@ -131,9 +131,10 @@
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" class="btn btn-primary">Add Comment</button>
+
             </form>
         {% else %}
-            <p><a href="{% url 'user:login' %}">Log in</a> to add a comment.</p>
+                <p><a href="{% url 'users:login' %}">Log in to add a comment</a></p>
         {% endif %}
 
         <div id="comments-section" class="mt-3">
