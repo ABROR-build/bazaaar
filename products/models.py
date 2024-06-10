@@ -150,16 +150,15 @@ class SavedProduct(models.Model):
 #         self.price = self.product.price_discount * self.quantity
 #         super().save(*args, **kwargs)
 #         self.order.calculate_total_price()
-class Like(models.Model):
-    account = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(Products, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = "Likes"
-
-    def __str__(self):
-        return f"{self.account.username} liked {self.product.name}"
-
+# class Like(models.Model):
+#     account = models.ForeignKey(User, on_delete=models.CASCADE)
+#     product = models.ForeignKey(Products, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         db_table = "Likes"
+#
+#     def __str__(self):
+#         return f"{self.account.username} liked {self.product.name}"
 
 
 class CartItem(models.Model):

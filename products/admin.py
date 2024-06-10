@@ -9,8 +9,6 @@ admin.site.register(models.Comments)
 admin.site.register(models.SavedProduct)
 admin.site.register(models.Images)
 admin.site.register(models.CartItem)
-admin.site.register(models.Like)
-admin.site.register(models.CartItem)
 admin.site.register(models.AddToCart)
 admin.site.register(models.Order)
 
