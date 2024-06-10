@@ -1,5 +1,7 @@
 {% load crispy_forms_tags %}
 
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,13 +50,21 @@
             color: blue;
             text-decoration: none;
         }
+        .icon{
+            padding-left:10px;
+            height:40px;
+            display:inline-block;
+        }
+        
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light " style="background: orange ;">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'products:home' %}">Brand</a>
+                <a class="navbar-brand" href="{% url 'products:home' %}">
+                    <img src="{% static 'bazaaar white background.png' %}" alt="bazaaar" class="icon">
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -106,7 +116,7 @@
             </div>
         </div>
 
-        <footer class="text-center text-lg-start mt-5 py-3 bg-light">
+        <footer class="text-center text-lg-start mt-5 py-3" style="background: orange;">
             <div class="container">
                 <div class="row">
                     <div class="col-md-6 text-md-start">

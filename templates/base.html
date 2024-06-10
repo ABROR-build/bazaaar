@@ -54,16 +54,21 @@
             color: blue;
             text-decoration: none;
         }
+        .icon {
+            padding-left:10px;
+            height:40px;
+            display:inline-block;
+        }
 
     </style>
 </head>
 <body>
     <div class="wrapper">
         <nav class="navbar navbar-expand-lg navbar-light " style="background: orange;">
+            
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'products:home' %}">
-                   <img src="{% static 'bazaaar.svg' %}" alt="bazaar" >
-                    brand
+                    <img src="{% static 'bazaaar white background.png' %}" alt="bazaar" class="icon">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
