@@ -12,20 +12,26 @@
 
 
 
-    {% for item in cart_items %}
-    <div class="product-item">
-        <p>{{ item.product.name }} ({{ item.quantity }})</p>
-        <p>Price: ${{ item.product.price_discount }}</p>
-        <a href="{% url 'products:remove_from_cart' item.id %}">Remove</a>
+{% for item in cart_items %}
+    <div class="container mt-4">
+        <div class="list-group">
+        <a href="{% url 'products:product-detail' page_id=item.product.page.id product_id=item.product.id %}" class="list-group-item list-group-item-action">
+            <h3 class="mb-1" >{{ item.product.name }} ({{ item.quantity }})</h3>
+            <h6 class="mb-1">Price: ${{ item.product.price_discount }}</h6>
+        </a>
+            <br>
+        </div>
+        <a href="{% url 'products:remove_from_cart' item.id %}"><button type="button" class="btn btn-danger">Remove</button></a>
     </div>
-    {% empty %}
+{% empty %}
     <p>Your cart is empty.</p>
-    {% endfor %}
+{% endfor %}
+
 
     </div>
-
-    <p>Total Price: ${{ total_price }}</p>
-
-    <a href="{% url 'products:home' %}">Continue Shopping</a>
+    <br>
+    <h3>Total Price: ${{ total_price }}</h3>
+    <hr>
+    <a href="{% url 'products:home' %}"><button type="button" class="btn btn-info">Continue Shopping</button></a>
 
 {% endblock %}

@@ -3,17 +3,23 @@ from django.views.generic import DeleteView, ListView
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Pages, Products, SavedProduct, CartItem, Images, Comments
 from products import forms
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from django.contrib import messages
+from django.db.models import Avg, Count
 
 
 class HomePageView(View):
     def get(self, request):
         products = Products.objects.all().order_by('-id')
+        for product in products:
+            comments = Comments.objects.filter(product=product)
+            product.average_rating = comments.aggregate(Avg('star_given'))['star_given__avg'] or 0
+            product.average_rating = comments.count()
         context = {
             'products': products,
         }
@@ -42,7 +48,7 @@ class SearchResultsView(ListView):
 
 #  Page bilab bog'liq viewlar
 
-class MypagesListView(View):
+class MypagesListView(LoginRequiredMixin, View):
     def get(self, request):
         pages = Pages.objects.filter(account=request.user)
         context = {
@@ -51,7 +57,7 @@ class MypagesListView(View):
         return render(request, 'page/my_pages.html', context=context)
 
 
-class CreatePageView(View):
+class CreatePageView(LoginRequiredMixin, View):
     def get(self, request):
         create_page_form = forms.PagesForm()
         context = {
@@ -88,7 +94,16 @@ class PageDetailView(View):
         return render(request, 'page/page_detail.html', context=context)
 
 
-class PageUpdateView(View):
+class PageUpdateView(LoginRequiredMixin, UserPassesTestMixin,  View):
+    def test_func(self):
+        page_id = self.kwargs['page_id']
+        page = get_object_or_404(Pages, pk=page_id)
+        return self.request.user == page.account
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Siz bu sahifani o'zgartira olmaysiz!")
+        return redirect('products:page-detail', page_id=self.kwargs['page_id'])
+
     def get(self, request, page_id):
         page = get_object_or_404(Pages, pk=page_id)
         form = forms.PagesForm(instance=page)
@@ -111,7 +126,17 @@ class PageUpdateView(View):
 
 # Product bilan bog'liq viewlar
 
-class ProductCreateView(View):
+
+class ProductCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        page_id = self.kwargs['page_id']
+        page = get_object_or_404(Pages, pk=page_id)
+        return self.request.user == page.account
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Siz bu sahifada mahsulot qo'sha olmaysiz!")
+        return redirect('products:page-detail', page_id=self.kwargs['page_id'])
+
     def get(self, request, page_id):
         create_form = forms.ProductsForm()
         image_form = forms.ProductImagesForm()
@@ -158,7 +183,16 @@ class ProductDetailView(View):
         return render(request, 'product/product_detail.html', context=context)
 
 
-class ProductUpdateView(View):
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        product_id = self.kwargs['product_id']
+        product = get_object_or_404(Products, pk=product_id)
+        return self.request.user == product.page.account
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Siz bu mahsulotni o'zgartira olmaysiz!")
+        return redirect('products:product-detail', page_id=self.kwargs['page_id'], product_id=self.kwargs['product_id'])
+
     def get_object(self, pk):
         return get_object_or_404(Products, pk=pk)
 
@@ -202,13 +236,21 @@ class ProductUpdateView(View):
             return render(request, 'product/product_update.html', context=context)
 
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Products
     template_name = 'product/product_delete.html'
     success_url = reverse_lazy('products:home')
 
+    def test_func(self):
+        product = self.get_object()
+        return self.request.user == product.page.account
 
-class SavedProductView(View):
+    def handle_no_permission(self):
+        messages.error(self.request, "Siz bu mahsulotni o'chira olmaysiz!")
+        return redirect('products:product-detail', page_id=self.kwargs['page_id'], product_id=self.kwargs['pk'])
+
+
+class SavedProductView(LoginRequiredMixin, View):
     def get(self, request):
         savedproducts = SavedProduct.objects.filter(user=request.user)
         context = {
@@ -232,7 +274,7 @@ class SaveProductView(View):
         return JsonResponse({'saved': saved})
 
 
-def view_cart(request):
+def view_cart(request,):
     cart_items = CartItem.objects.filter(user=request.user)
     total_price = sum(item.product.price_discount * item.quantity for item in cart_items)
     context = {
@@ -302,7 +344,7 @@ class CommentEditView(View):
         context = {
             'form': form,
             'comment': comment,
-            'product': comment.product  # Assuming comment has a 'product' field
+            'product': comment.product
         }
         return render(request, 'comments/edit_comment.html', context=context)
 

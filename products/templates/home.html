@@ -5,6 +5,61 @@
 {% endblock %}
 
 {% block content %}
+<style>
+    .product-card {
+        width: 250px;
+        height: 300px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        position: relative;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .carousel-image-container {
+        width: 130px;
+        height: 70%;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    .carousel-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .product-details {
+        margin-top: 10px;
+        color: black;
+        flex-grow: 1;
+    }
+    .product-details h3,
+    .product-details p {
+        color: black;
+        text-decoration: none;
+    }
+    .product-details h3:hover,
+    .product-details p:hover {
+        text-decoration: none;
+    }
+    .product-details h3 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    .product-details p {
+        margin: 0;
+    }
+    .price {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    a {
+    color: black;
+    text-decoration: none;
+}
+</style>
+
 <div class="container">
     <h2>Shops to get you started</h2>
     <div class="row">
@@ -13,15 +68,15 @@
                 <div class="product-card">
                     <a href="{% url 'products:product-detail' page_id=product.page.id product_id=product.id %}">
                         <div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                {% for image in product.image_set.all %}
+                             <div class="carousel-inner">
+                                {% for image in product.images_set.all %}
                                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                        <div class="carousel-image-container">
+                                         <div class="carousel-image-container">
                                             <img src="{{ image.image.url }}" class="d-block w-100 carousel-image" alt="{{ product.name }}">
-                                        </div>
+                                         </div>
                                     </div>
                                 {% endfor %}
-                            </div>
+                             </div>
                             <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Previous</span>
@@ -32,11 +87,13 @@
                             </button>
                         </div>
                         <h3>{{ product.name }}</h3>
-                        <p>⭐{{ product.rating }} ({{ product.reviews_count }} reviews)</p>
+                        <h6>{{ product.price_discount }} $</h6>
+                        <p>⭐{{ product.average_rating|floatformat:1 }} {{ product.reviews_count }}average reviews</p>
                     </a>
                 </div>
             </div>
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}

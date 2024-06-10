@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %}
     Update Product
 {% endblock %}
@@ -11,10 +13,10 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-            {{ update_form.as_p }}
+            {{ update_form|crispy }}
         </div>
         <div class="mb-3">
-            {{ image_form.as_p }}
+            {{ image_form|crispy }}
         </div>
         <button type="submit" class="btn btn-primary">Update Product</button>
     </form>
