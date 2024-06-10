@@ -57,9 +57,11 @@
 </head>
 <body>
     <div class="wrapper">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light " style="background: orange;">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'products:home' %}">Brand</a>
+                <a class="navbar-brand" href="{% url 'products:home' %}">
+                    brand
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -104,7 +106,7 @@
             {% endblock content %}
         </div>
 
-        <footer class="text-center text-lg-start mt-5 py-3 bg-light">
+        <footer class="text-center text-lg-start mt-5 py-3 " style="background: orange;">
             <div class="container">
                 <div class="row">
                     <div class="col-md-6 text-md-start">
