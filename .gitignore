@@ -1,2 +1,5 @@
 env
 .idea
+.env
+db.sqlite3
+db.json
