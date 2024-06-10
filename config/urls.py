@@ -11,3 +11,9 @@ urlpatterns = [
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+urlpatterns += [path('error/', include('errorspage.urls'))]
+
+
+if not settings.DEBUG:
+    handler404 = 'errorspage.views.custom_404'

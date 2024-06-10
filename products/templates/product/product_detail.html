@@ -55,9 +55,13 @@
         font-weight: bold;
     }
     a {
-    color: blue;
+    color: red;
     text-decoration: none;
 }
+    a:hover{
+        color: #cc1100;
+        text-decoration:underline;
+    }
 </style>
 <div class="container mt-5">
     <h1>{{ product.name }}</h1>
@@ -65,7 +69,10 @@
         {% if product.page.account.image %}
             <img src="{{ page.account.image.url }}" alt="admin's profile" class="img-thumbnail me-2" style="max-width: 40px;">
         {% endif %}
-        <h5>Page: {{ product.page.name }}</h5>
+        <a href="{% url 'products:page-detail' page_id=product.page.id %}">
+            <h5>Page: {{ product.page.name }}</h5>
+        </a>
+
     </div>
     <p class="price">Price: {{ product.price_discount }}-$</p>
     {% if request.user == product.page.account %}
